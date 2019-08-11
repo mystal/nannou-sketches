@@ -30,7 +30,6 @@ struct Model {
 }
 
 fn model(app: &App) -> Model {
-    // TODO: Window seems to be too big? Doing something wrong??
     let window_builder = nannou::winit::WindowBuilder::new()
         .with_resizable(false);
     let window = app.new_window()
@@ -42,7 +41,7 @@ fn model(app: &App) -> Model {
         .unwrap();
 
     Model {
-        stars: (0..100).map(|_| Star::new(WIDTH, HEIGHT)).collect(),
+        stars: (0..400).map(|_| Star::new(WIDTH, HEIGHT)).collect(),
     }
 }
 
