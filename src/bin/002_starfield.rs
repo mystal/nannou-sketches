@@ -80,7 +80,6 @@ fn view(app: &App, model: &Model, frame: &Frame) {
 
         draw.line()
             .color(WHITE)
-            .thickness(1.0)
             .start((px, py).into())
             .end((sx, sy).into());
     }

@@ -74,7 +74,7 @@ fn view(app: &App, model: &Model, frame: &Frame) {
     for drop in &model.drops {
         draw.line()
             .color(Rgb::new(138u8, 43, 226))
-            .thickness(map_range(drop.z, 0.0, 20.0, 1.0, 3.0))
+            .stroke_weight(map_range(drop.z, 0.0, 20.0, 1.0, 3.0))
             .start((drop.x, drop.y).into())
             .end((drop.x, drop.y - drop.length).into());
     }
