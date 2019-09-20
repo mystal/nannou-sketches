@@ -745,8 +745,8 @@ dependencies = [
 
 [[package]]
 name = "nannou"
-version = "0.10.0"
-source = "git+https://github.com/nannou-org/nannou#359cbfd9f1389b7df3dd148cb8085087ab0cc0c0"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "approx 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cgmath 0.16.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -763,6 +763,7 @@ dependencies = [
  "palette 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pennereq 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rusttype 0.7.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.99 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.99 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.40 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -778,7 +779,7 @@ dependencies = [
 name = "nannou-sketches"
 version = "0.1.0"
 dependencies = [
- "nannou 0.10.0 (git+https://github.com/nannou-org/nannou)",
+ "nannou 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2000,7 +2001,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum memoffset 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ce6075db033bbbb7ee5a0bbd3a3186bbae616f57fb001c485c7ff77955f8177f"
 "checksum metal 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7de9c2b83c946ab01c9942928388f911d93486b97636d9927541345905fea65d"
 "checksum moltenvk_deps 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "4855da161930485e37eaafd5697f918351916c496139bdc40668cf6ed92f5f9c"
-"checksum nannou 0.10.0 (git+https://github.com/nannou-org/nannou)" = "<none>"
+"checksum nannou 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)" = "88d2d5f388219c34dfb84df32273ddb2643874489987dded07aaac89da57ac95"
 "checksum nix 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6c722bee1037d430d0f8e687bbdbf222f27cc6e4e68d5caf630857bb2b6dbdce"
 "checksum nodrop 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)" = "2f9667ddcc6cc8a43afc9b7917599d7216aa09c463919ea32c59ed6cac8bc945"
 "checksum noise 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "9a3a34d4f8a31f95919b7ead9f5b60afb9bda0cae98b9219432ffaa6f00b0141"
