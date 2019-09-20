@@ -1,12 +1,14 @@
 // Based on the Processing Flocking example: https://processing.org/examples/flocking.html
+// Trying to mimic the look and feel of: https://www.youtube.com/watch?v=QbUPfMXXQIY
 
 use nannou::prelude::*;
+use nannou::color::Gradient;
 
 const WIDTH: f32 = 800.0;
 const HEIGHT: f32 = 600.0;
 
 const INITIAL_BOID_COUNT: u32 = 150;
-const BOID_RADIUS: f32 = 2.0;
+const BOID_RADIUS: f32 = 4.0;
 const MAX_SPEED: f32 = 2.0;
 const MAX_FORCE: f32 = 0.03;
 
@@ -37,7 +39,7 @@ fn model(app: &App) -> Model {
     let _window = app.new_window()
         .window(window_builder)
         .with_dimensions(WIDTH as u32, HEIGHT as u32)
-        .with_title("Processing Boids")
+        .with_title("More Boids Fun!")
         .event(event)
         .view(view)
         .build()
@@ -53,6 +55,9 @@ fn event(app: &App, model: &mut Model, event: WindowEvent) {
         WindowEvent::MousePressed(MouseButton::Left) => {
             let pos = app.mouse.position();
             model.boids.push(Boid::new(pos.x, pos.y));
+        }
+        WindowEvent::KeyPressed(Key::R) => {
+            model.boids = (0..INITIAL_BOID_COUNT).map(|_| Boid::new(0.0, 0.0)).collect();
         }
         _ => {}
     }
@@ -170,6 +175,14 @@ fn view(app: &App, model: &Model, frame: &Frame) {
 
     draw.background().color(Rgb::new(50u8, 50, 50));
 
+    let neighbor_dist = 50.0;
+
+    let happy_boid_color = Rgba::new(95.0 / 255.0, 219.0 / 255.0, 0.0 / 255.0, 200.0 / 255.0)
+        .into_linear();
+    let sad_boid_color = Rgba::new(0.0 / 255.0, 146.0 / 255.0, 219.0 / 255.0, 200.0 / 255.0)
+        .into_linear();
+    let gradient = Gradient::new(vec![sad_boid_color, happy_boid_color]);
+
     // Draw boids.
     let (v1, v2, v3) = (
         vec2(2.0 * BOID_RADIUS, 0.0),
@@ -177,9 +190,12 @@ fn view(app: &App, model: &Model, frame: &Frame) {
         vec2(-2.0 * BOID_RADIUS, BOID_RADIUS),
     );
     for boid in &model.boids {
+        let neighbor_count = model.boids.iter()
+            .filter(|other| boid.pos.distance(other.pos) < neighbor_dist)
+            .count();
+        let gradient_color = map_range(neighbor_count as f32, 0.0, 8.0, 0.0, 1.0);
         draw.tri()
-            .color(Rgba::new(200u8, 200, 200, 100))
-            .stroke(WHITE)
+            .color(gradient.get(gradient_color))
             .points(v1, v2, v3)
             .xy(boid.pos)
             .rotate(-boid.vel.angle());
