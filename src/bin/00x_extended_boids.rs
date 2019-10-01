@@ -44,6 +44,35 @@ impl Repel {
 struct Model {
     boids: Vec<Boid>,
     repels: Vec<Repel>,
+
+    enable_separation: bool,
+    enable_alignment: bool,
+    enable_cohesion: bool,
+    enable_repulsion: bool,
+
+    separation_factor: f32,
+    alignment_factor: f32,
+    cohesion_factor: f32,
+    repulsion_factor: f32,
+}
+
+impl Model {
+    fn new() -> Self {
+        Self {
+            boids: (0..INITIAL_BOID_COUNT).map(|_| Boid::new(0.0, 0.0)).collect(),
+            repels: Vec::new(),
+
+            enable_separation: true,
+            enable_alignment: true,
+            enable_cohesion: true,
+            enable_repulsion: true,
+
+            separation_factor: 1.5,
+            alignment_factor: 1.0,
+            cohesion_factor: 1.0,
+            repulsion_factor: 1.5,
+        }
+    }
 }
 
 fn model(app: &App) -> Model {
@@ -58,10 +87,7 @@ fn model(app: &App) -> Model {
         .build()
         .unwrap();
 
-    Model {
-        boids: (0..INITIAL_BOID_COUNT).map(|_| Boid::new(0.0, 0.0)).collect(),
-        repels: Vec::new(),
-    }
+    Model::new()
 }
 
 fn event(app: &App, model: &mut Model, event: WindowEvent) {
@@ -83,117 +109,138 @@ fn event(app: &App, model: &mut Model, event: WindowEvent) {
 }
 
 fn update(_app: &App, model: &mut Model, _update: Update) {
-    for i in 0..model.boids.len() {
-        let boid = &model.boids[i];
+    // Collect forces and apply them after computing them.
+    let mut accels = vec![Vector2::zero(); model.boids.len()];
 
-        // Compute flocking accelerations.
-        let sepration = {
-            // Try to steer away from nearby boids.
-            let desired_separation = 25.0;
+    if model.enable_separation && model.separation_factor > 0.0 {
+        for (boid, accel) in model.boids.iter().zip(accels.iter_mut()) {
+            let separation = {
+                // Try to steer away from nearby boids.
+                let desired_separation = 25.0;
 
-            let mut steer = Vector2::zero();
-            let mut count = 0;
+                let mut steer = Vector2::zero();
+                let mut count = 0;
 
-            // Check if we're too close to all other boids.
-            for other in &model.boids {
-                let dist = boid.pos.distance(other.pos);
+                // Check if we're too close to all other boids.
+                for other in &model.boids {
+                    let dist = boid.pos.distance(other.pos);
 
-                // If we're too close, modify our steering vector.
-                if dist > 0.0 && dist < desired_separation {
-                    let diff = (boid.pos - other.pos).normalize() / dist;
-                    steer += diff;
-                    count += 1;
+                    // If we're too close, modify our steering vector.
+                    if dist > 0.0 && dist < desired_separation {
+                        let diff = (boid.pos - other.pos).normalize() / dist;
+                        steer += diff;
+                        count += 1;
+                    }
                 }
-            }
 
-            // Average out the steering.
-            if count > 0 {
-                steer /= count as f32;
-            }
-
-            if !steer.is_zero() {
-                steer = steer.with_magnitude(MAX_SPEED);
-                steer -= boid.vel;
-                steer = steer.limit_magnitude(MAX_FORCE);
-            }
-
-            steer
-        };
-        let alignment = {
-            // Try to align with nearby boids.
-            let neighbor_dist = 50.0;
-
-            let mut sum = Vector2::zero();
-            let mut count = 0;
-
-            for other in &model.boids {
-                let dist = boid.pos.distance(other.pos);
-                if dist > 0.0 && dist < neighbor_dist {
-                    sum += other.vel;
-                    count += 1;
+                // Average out the steering.
+                if count > 0 {
+                    steer /= count as f32;
                 }
-            }
 
-            if count > 0 {
-                let avg_vel = sum / count as f32;
-                let desired_vel = avg_vel.with_magnitude(MAX_SPEED);
-                (desired_vel - boid.vel).limit_magnitude(MAX_FORCE)
-            } else {
-                vec2(0.0, 0.0)
-            }
-        };
-        let cohesion = {
-            // Try to move to the center of nearby boids.
-            let neighbor_dist = 50.0;
-
-            let mut sum = Vector2::zero();
-            let mut count = 0;
-
-            for other in &model.boids {
-                let dist = boid.pos.distance(other.pos);
-                if dist > 0.0 && dist < neighbor_dist {
-                    sum += other.pos;
-                    count += 1;
+                if !steer.is_zero() {
+                    steer = steer.with_magnitude(MAX_SPEED);
+                    steer -= boid.vel;
+                    steer = steer.limit_magnitude(MAX_FORCE);
                 }
-            }
 
-            if count > 0 {
-                let avg_pos = sum / count as f32;
-                let desired = (avg_pos - boid.pos).with_magnitude(MAX_SPEED);
-                (desired - boid.vel).limit_magnitude(MAX_FORCE)
-            } else {
-                vec2(0.0, 0.0)
-            }
-        };
-        let repulsion = {
-            // Try to move away from repel nodes.
-            let repel_dist = 50.0;
+                steer
+            };
+            *accel += separation * model.separation_factor;
+        }
+    }
 
-            let mut sum = Vector2::zero();
-            let mut count = 0;
+    if model.enable_alignment && model.alignment_factor > 0.0 {
+        for (boid, accel) in model.boids.iter().zip(accels.iter_mut()) {
+            let alignment = {
+                // Try to align with nearby boids.
+                let neighbor_dist = 50.0;
 
-            for repel in &model.repels {
-                let dist = boid.pos.distance(repel.pos);
-                if dist > 0.0 && dist < repel_dist {
-                    sum += repel.pos;
-                    count += 1;
+                let mut sum = Vector2::zero();
+                let mut count = 0;
+
+                for other in &model.boids {
+                    let dist = boid.pos.distance(other.pos);
+                    if dist > 0.0 && dist < neighbor_dist {
+                        sum += other.vel;
+                        count += 1;
+                    }
                 }
-            }
 
-            if count > 0 {
-                let avg_pos = sum / count as f32;
-                // Move away from the average position.
-                let desired = -(avg_pos - boid.pos).with_magnitude(MAX_SPEED);
-                (desired - boid.vel).limit_magnitude(MAX_FORCE)
-            } else {
-                vec2(0.0, 0.0)
-            }
-        };
+                if count > 0 {
+                    let avg_vel = sum / count as f32;
+                    let desired_vel = avg_vel.with_magnitude(MAX_SPEED);
+                    (desired_vel - boid.vel).limit_magnitude(MAX_FORCE)
+                } else {
+                    vec2(0.0, 0.0)
+                }
+            };
+            *accel += alignment * model.alignment_factor;
+        }
+    }
 
+    if model.enable_cohesion && model.cohesion_factor > 0.0 {
+        for (boid, accel) in model.boids.iter().zip(accels.iter_mut()) {
+            let cohesion = {
+                // Try to move to the center of nearby boids.
+                let neighbor_dist = 50.0;
+
+                let mut sum = Vector2::zero();
+                let mut count = 0;
+
+                for other in &model.boids {
+                    let dist = boid.pos.distance(other.pos);
+                    if dist > 0.0 && dist < neighbor_dist {
+                        sum += other.pos;
+                        count += 1;
+                    }
+                }
+
+                if count > 0 {
+                    let avg_pos = sum / count as f32;
+                    let desired = (avg_pos - boid.pos).with_magnitude(MAX_SPEED);
+                    (desired - boid.vel).limit_magnitude(MAX_FORCE)
+                } else {
+                    vec2(0.0, 0.0)
+                }
+            };
+            *accel += cohesion * model.cohesion_factor;
+        }
+    }
+
+    if model.enable_repulsion && model.repulsion_factor > 0.0 {
+        for (boid, accel) in model.boids.iter().zip(accels.iter_mut()) {
+            let repulsion = {
+                // Try to move away from repel nodes.
+                let repel_dist = 50.0;
+
+                let mut sum = Vector2::zero();
+                let mut count = 0;
+
+                for repel in &model.repels {
+                    let dist = boid.pos.distance(repel.pos);
+                    if dist > 0.0 && dist < repel_dist {
+                        sum += repel.pos;
+                        count += 1;
+                    }
+                }
+
+                if count > 0 {
+                    let avg_pos = sum / count as f32;
+                    // Move away from the average position.
+                    let desired = -(avg_pos - boid.pos).with_magnitude(MAX_SPEED);
+                    (desired - boid.vel).limit_magnitude(MAX_FORCE)
+                } else {
+                    vec2(0.0, 0.0)
+                }
+            };
+            *accel += repulsion * model.repulsion_factor;
+        }
+    }
+
+    for (boid, accel) in model.boids.iter_mut().zip(accels.iter()) {
         // Update our physics.
-        let boid = &mut model.boids[i];
-        let accel = sepration * 1.5 + alignment + cohesion + repulsion * 1.5;
-        boid.vel += accel;
+        boid.vel += *accel;
         boid.vel = boid.vel.limit_magnitude(MAX_SPEED);
         boid.pos += boid.vel;
 
