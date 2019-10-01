@@ -29,8 +29,21 @@ impl Boid {
     }
 }
 
+struct Repel {
+    pos: Vector2,
+}
+
+impl Repel {
+    fn new(x: f32, y: f32) -> Self {
+        Self {
+            pos: vec2(x, y),
+        }
+    }
+}
+
 struct Model {
     boids: Vec<Boid>,
+    repels: Vec<Repel>,
 }
 
 fn model(app: &App) -> Model {
@@ -47,6 +60,7 @@ fn model(app: &App) -> Model {
 
     Model {
         boids: (0..INITIAL_BOID_COUNT).map(|_| Boid::new(0.0, 0.0)).collect(),
+        repels: Vec::new(),
     }
 }
 
@@ -56,8 +70,13 @@ fn event(app: &App, model: &mut Model, event: WindowEvent) {
             let pos = app.mouse.position();
             model.boids.push(Boid::new(pos.x, pos.y));
         }
+        WindowEvent::MousePressed(MouseButton::Right) => {
+            let pos = app.mouse.position();
+            model.repels.push(Repel::new(pos.x, pos.y));
+        }
         WindowEvent::KeyPressed(Key::R) => {
             model.boids = (0..INITIAL_BOID_COUNT).map(|_| Boid::new(0.0, 0.0)).collect();
+            model.repels = Vec::new();
         }
         _ => {}
     }
@@ -146,10 +165,34 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
                 vec2(0.0, 0.0)
             }
         };
+        let repulsion = {
+            // Try to move away from repel nodes.
+            let repel_dist = 50.0;
+
+            let mut sum = Vector2::zero();
+            let mut count = 0;
+
+            for repel in &model.repels {
+                let dist = boid.pos.distance(repel.pos);
+                if dist > 0.0 && dist < repel_dist {
+                    sum += repel.pos;
+                    count += 1;
+                }
+            }
+
+            if count > 0 {
+                let avg_pos = sum / count as f32;
+                // Move away from the average position.
+                let desired = -(avg_pos - boid.pos).with_magnitude(MAX_SPEED);
+                (desired - boid.vel).limit_magnitude(MAX_FORCE)
+            } else {
+                vec2(0.0, 0.0)
+            }
+        };
 
         // Update our physics.
         let boid = &mut model.boids[i];
-        let accel = sepration * 1.5 + alignment + cohesion;
+        let accel = sepration * 1.5 + alignment + cohesion + repulsion * 1.5;
         boid.vel += accel;
         boid.vel = boid.vel.limit_magnitude(MAX_SPEED);
         boid.pos += boid.vel;
@@ -182,6 +225,14 @@ fn view(app: &App, model: &Model, frame: &Frame) {
     let sad_boid_color = Rgba::new(0.0 / 255.0, 146.0 / 255.0, 219.0 / 255.0, 200.0 / 255.0)
         .into_linear();
     let gradient = Gradient::new(vec![sad_boid_color, happy_boid_color]);
+
+    // Draw repel nodes first.
+    for repel in &model.repels {
+        draw.ellipse()
+            .radius(BOID_RADIUS)
+            .color(nannou::color::RED)
+            .xy(repel.pos);
+    }
 
     // Draw boids.
     let (v1, v2, v3) = (
