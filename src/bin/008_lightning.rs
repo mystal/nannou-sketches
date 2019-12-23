@@ -3,7 +3,8 @@
 // And: https://physics.stackexchange.com/questions/405834/what-determines-the-shape-of-lightning
 
 // TODO: Leaders have a chance to die off. Higher they move the bigger the chance?
-// TODO: Leaders with shorter paths are drawn dimmer and thinner.
+// TODO: Want it to look less like a tree. More like one central trunk with small bits coming off.
+// Leaders with shorter paths are drawn dimmer and thinner.
 
 use std::time::Instant;
 
@@ -17,8 +18,9 @@ const MIN_LIGHTNING_SPEED: f32 = 100.0;
 const MAX_LIGHTNING_SPEED: f32 = 250.0;
 const MIN_TURN_DIST: f32 = 10.0;
 const MAX_TURN_DIST: f32 = 40.0;
-const MIN_TURN_DEGREES: f32 = -20.0;
-const MAX_TURN_DEGREES: f32 = 20.0;
+const MIN_TURN_DEGREES: f32 = -40.0;
+const MAX_TURN_DEGREES: f32 = 40.0;
+const GROUND_BIAS_ANGLE: f32 = 30.0;
 
 const SHORT_PATH: usize = 10;
 const LONG_PATH: usize = 25;
@@ -70,8 +72,20 @@ impl Leader {
             // TODO: Could probably optimize this vector math but whatever.
             // Pick a new turn_dist and direction.
             self.turn_dist = random_range(MIN_TURN_DIST, MAX_TURN_DIST);
-            let current_angle = self.dir.angle().to_degrees();
-            let new_angle = current_angle + random_range(MIN_TURN_DEGREES, MAX_TURN_DEGREES);
+            let new_angle = {
+                let mut current_angle = self.dir.angle().to_degrees();
+                if current_angle < 0.0 {
+                    current_angle += 360.0;
+                }
+                let mut angle_diff_to_down = 270.0 - current_angle;
+                if angle_diff_to_down > 180.0 {
+                    angle_diff_to_down = -(360.0 - angle_diff_to_down);
+                }
+                //println!("Current: {} Diff to down: {}", current_angle, angle_diff_to_down);
+                // Bias the new angle down toward the ground.
+                let bias = angle_diff_to_down.signum() * (angle_diff_to_down / 180.0).powi(2) * GROUND_BIAS_ANGLE;
+                current_angle + bias + random_range(MIN_TURN_DEGREES, MAX_TURN_DEGREES)
+            };
             let rotation = Basis2::from_angle(Deg(new_angle));
             let dir = rotation.rotate_vector(cgmath::Vector2::unit_x());
             self.dir = dir.into();
@@ -146,6 +160,8 @@ fn update(_app: &App, model: &mut Model, update: Update) {
             // TODO: Save out current leader's path index so we can walk up for the grounded strike.
             let new_leader = Leader::new(
                 model.leaders[i].pos(),
+                // Branch off in a random direction.
+                // TODO: Maybe enforece a minimum angle?
                 model.leaders[i].dir.angle().to_degrees() + random_range(MIN_TURN_DEGREES, MAX_TURN_DEGREES),
                 Some(i),
             );
