@@ -3,6 +3,8 @@
 // And: https://physics.stackexchange.com/questions/405834/what-determines-the-shape-of-lightning
 
 // TODO: Leaders have a chance to die off. Higher they move the bigger the chance?
+// TODO: Compute some "density" of charge so that leaders further from the density are more likely
+// to die?
 // TODO: Want it to look less like a tree. More like one central trunk with small bits coming off.
 // Leaders with shorter paths are drawn dimmer and thinner.
 
