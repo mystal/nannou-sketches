@@ -4,7 +4,18 @@ version = "0.1.0"
 authors = ["Gabriel Martinez <reitaka@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 nannou = "0.12"
+
+[profile.dev]
+debug = false
+
+# Override dependency profiles.
+# See: https://doc.rust-lang.org/cargo/reference/profiles.html#overrides
+[profile.dev.package."*"]
+# Optimize dependencies to speed up dev builds.
+opt-level = 3
+debug = false
+
+[patch.crates-io]
+nannou = { path = "../../rust-libs/nannou" }
