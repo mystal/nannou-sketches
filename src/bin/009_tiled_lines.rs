@@ -2,7 +2,7 @@
 // https://generativeartistry.com/tutorials/tiled-lines/
 
 use nannou::prelude::*;
-use nannou::winit::VirtualKeyCode;
+use nannou::winit::event::VirtualKeyCode;
 use nannou::Draw;
 
 const WIDTH: f32 = 320.0;
@@ -15,14 +15,14 @@ struct Model {
 }
 
 fn model(app: &App) -> Model {
-    app.set_loop_mode(LoopMode::wait(1));
+    app.set_loop_mode(LoopMode::wait());
 
-    let window_builder = nannou::winit::WindowBuilder::new()
+    let window_builder = nannou::winit::window::WindowBuilder::new()
         .with_resizable(false);
     let _window = app.new_window()
         .window(window_builder)
-        .with_dimensions(WIDTH as u32, HEIGHT as u32)
-        .with_title("Tiled Lines")
+        .size_pixels(WIDTH as u32, HEIGHT as u32)
+        .title("Tiled Lines")
         .key_pressed(key_pressed)
         .view(view)
         .build()
@@ -63,7 +63,7 @@ fn draw_line(draw: &Draw, x: f32, y: f32, width: f32, height: f32) {
         .color(BLACK);
 }
 
-fn view(app: &App, model: &Model, frame: &Frame) {
+fn view(app: &App, model: &Model, frame: Frame) {
     if model.draw_frame != app.elapsed_frames() {
         return;
     }

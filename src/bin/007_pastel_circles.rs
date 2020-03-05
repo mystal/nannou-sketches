@@ -42,12 +42,12 @@ struct Model {
 }
 
 fn model(app: &App) -> Model {
-    let window_builder = nannou::winit::WindowBuilder::new()
+    let window_builder = nannou::winit::window::WindowBuilder::new()
         .with_resizable(false);
     let _window = app.new_window()
         .window(window_builder)
-        .with_dimensions(WIDTH as u32, HEIGHT as u32)
-        .with_title("Pastel Circles")
+        .size_pixels(WIDTH as u32, HEIGHT as u32)
+        .title("Pastel Circles")
         .view(view)
         .build()
         .unwrap();
@@ -72,7 +72,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
     }
 }
 
-fn view(app: &App, model: &Model, frame: &Frame) {
+fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
     draw.background()

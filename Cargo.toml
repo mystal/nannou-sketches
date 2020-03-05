@@ -5,7 +5,7 @@ authors = ["Gabriel Martinez <reitaka@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-nannou = "0.12"
+nannou = "0.13"
 
 [profile.dev]
 debug = false
@@ -17,5 +17,5 @@ debug = false
 opt-level = 3
 debug = false
 
-[patch.crates-io]
-nannou = { path = "../../rust-libs/nannou" }
+# [patch.crates-io]
+# nannou = { path = "../../rust-libs/nannou" }

@@ -45,12 +45,12 @@ struct Model {
 }
 
 fn model(app: &App) -> Model {
-    let window_builder = nannou::winit::WindowBuilder::new()
+    let window_builder = nannou::winit::window::WindowBuilder::new()
         .with_resizable(false);
     let _window = app.new_window()
         .window(window_builder)
-        .with_dimensions(WIDTH as u32, HEIGHT as u32)
-        .with_title("Purple Rain")
+        .size_pixels(WIDTH as u32, HEIGHT as u32)
+        .title("Purple Rain")
         .view(view)
         .build()
         .unwrap();
@@ -66,7 +66,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
     }
 }
 
-fn view(app: &App, model: &Model, frame: &Frame) {
+fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
     draw.background().color(Rgb::new(230u8, 230, 250));

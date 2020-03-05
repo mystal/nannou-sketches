@@ -8,6 +8,7 @@ use nannou::rand::rand::{
     self,
     seq::SliceRandom,
 };
+use nannou::winit;
 
 const WIDTH: f32 = 800.0;
 const HEIGHT: f32 = 800.0;
@@ -51,12 +52,12 @@ struct Model {
 }
 
 fn model(app: &App) -> Model {
-    let window_builder = nannou::winit::WindowBuilder::new()
+    let window_builder = winit::window::WindowBuilder::new()
         .with_resizable(false);
     let _window = app.new_window()
         .window(window_builder)
-        .with_dimensions(WIDTH as u32, HEIGHT as u32)
-        .with_title("Iso Walkers")
+        .size_pixels(WIDTH as u32, HEIGHT as u32)
+        .title("Iso Walkers")
         .view(view)
         .build()
         .unwrap();
@@ -88,7 +89,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
     }
 }
 
-fn view(app: &App, model: &Model, frame: &Frame) {
+fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
     if app.elapsed_frames() < 1 {
