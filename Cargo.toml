@@ -5,7 +5,7 @@ authors = ["Gabriel Martinez <reitaka@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-nannou = "0.13"
+nannou = "0.14"
 
 [profile.dev]
 debug = false
