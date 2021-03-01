@@ -3,7 +3,7 @@
 // https://github.com/ShriRambo/p5Sketches/blob/master/Iso%20random%20walker/sketch.js
 
 use nannou::prelude::*;
-use nannou::math::{cgmath, Basis2, Deg, Rad, Rotation2};
+use nannou::math::{cgmath, Basis2, Rad, Rotation2};
 use nannou::rand::rand::{
     self,
     seq::SliceRandom,

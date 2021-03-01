@@ -32,7 +32,7 @@ struct Model {
 fn model(app: &App) -> Model {
     let window_builder = nannou::winit::window::WindowBuilder::new()
         .with_resizable(false);
-    let window = app.new_window()
+    let _window = app.new_window()
         .window(window_builder)
         .size_pixels(WIDTH as u32, HEIGHT as u32)
         .title("Starfield")
@@ -46,15 +46,17 @@ fn model(app: &App) -> Model {
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
-    let speed = map_range(app.mouse.x, -WIDTH / 2.0, WIDTH / 2.0, 0.0, 40.0);
+    let (width, height) = app.window_rect().w_h();
+
+    let speed = map_range(app.mouse.x, -width / 2.0, width / 2.0, 0.0, 40.0);
     for star in &mut model.stars {
         star.pz = star.z;
         star.z -= speed;
         if star.z < 1.0 {
-            star.z = WIDTH as f32;
+            star.z = width;
             star.pz = star.z;
-            star.x = random_range(-WIDTH / 2.0, WIDTH / 2.0);
-            star.y = random_range(-HEIGHT / 2.0, HEIGHT / 2.0);
+            star.x = random_range(-width / 2.0, width / 2.0);
+            star.y = random_range(-height / 2.0, height / 2.0);
         }
     }
 }
@@ -64,19 +66,19 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     draw.background().color(BLACK);
 
-    let win = app.window_rect();
+    let (width, height) = app.window_rect().w_h();
 
     for star in &model.stars {
-        let sx = map_range(star.x / star.z, 0.0, 1.0, 0.0, WIDTH);
-        let sy = map_range(star.y / star.z, 0.0, 1.0, 0.0, HEIGHT);
+        let sx = map_range(star.x / star.z, 0.0, 1.0, 0.0, width);
+        let sy = map_range(star.y / star.z, 0.0, 1.0, 0.0, height);
         let r = map_range(star.z, 0.0, WIDTH, 8.0, 0.0);
         draw.ellipse()
             .x_y(sx, sy)
             .color(WHITE)
             .radius(r);
 
-        let px = map_range(star.x / star.pz, 0.0, 1.0, 0.0, WIDTH);
-        let py = map_range(star.y / star.pz, 0.0, 1.0, 0.0, HEIGHT);
+        let px = map_range(star.x / star.pz, 0.0, 1.0, 0.0, width);
+        let py = map_range(star.y / star.pz, 0.0, 1.0, 0.0, height);
 
         draw.line()
             .color(WHITE)
