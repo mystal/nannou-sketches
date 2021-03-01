@@ -296,7 +296,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
             .color(gradient.get(gradient_color))
             .points(v1, v2, v3)
             .xy(boid.pos)
-            .rotate(-boid.vel.angle());
+            .rotate(boid.vel.angle());
     }
 
     draw.to_frame(app, &frame)
