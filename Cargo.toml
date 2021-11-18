@@ -2,7 +2,7 @@
 name = "nannou-sketches"
 version = "0.1.0"
 authors = ["Gabriel Martinez <reitaka@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 nannou = "0.15"
