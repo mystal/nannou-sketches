@@ -3,7 +3,6 @@
 // https://github.com/ShriRambo/p5Sketches/blob/master/Iso%20random%20walker/sketch.js
 
 use nannou::prelude::*;
-use nannou::math::{cgmath, Basis2, Rad, Rotation2};
 use nannou::rand::rand::{
     self,
     seq::SliceRandom,
@@ -26,8 +25,8 @@ const TURN_CHANCE: f32 = 0.05;
 
 // Position and direction are in pixel coordinates.
 struct IsoWalker {
-    pos: Vector2,
-    dir: Vector2,
+    pos: Vec2,
+    dir: Vec2,
     color: Srgb<u8>,
 }
 
@@ -35,13 +34,13 @@ impl IsoWalker {
     fn new() -> Self {
         let x = random_range(-WIDTH / 2.0, WIDTH / 2.0);
         let y = random_range(-HEIGHT / 2.0, HEIGHT / 2.0);
-        let first_rot = Basis2::from_angle(Rad(PI / 6.0));
-        let second_rot = Basis2::from_angle(Rad(random_range(0, 3) as f32 * TAU / 3.0));
-        let dir = second_rot.rotate_vector(first_rot.rotate_vector(cgmath::vec2(2.0, 0.0)));
+        let first_rot = PI / 6.0;
+        let second_rot = random_range(0, 3) as f32 * TAU / 3.0;
+        let dir = vec2(2.0, 0.0).rotate(first_rot).rotate(second_rot);
         let color = WALKER_PALETTE.choose(&mut rand::thread_rng()).unwrap();
         Self {
             pos: vec2(x, y),
-            dir: Vector2::from(dir),
+            dir,
             color: Srgb::from_components(color.clone()),
         }
     }
@@ -72,8 +71,8 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
         walker.pos += walker.dir;
 
         if random_f32() < TURN_CHANCE {
-            let rotation = Basis2::from_angle(Rad(random_range(0, 3) as f32 * TAU / 3.0));
-            walker.dir = Vector2::from(rotation.rotate_vector(walker.dir.into()));
+            let rotation = random_range(0, 3) as f32 * TAU / 3.0;
+            walker.dir = walker.dir.rotate(rotation);
         }
 
         if walker.pos.x < -WIDTH / 2.0 {

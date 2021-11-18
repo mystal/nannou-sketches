@@ -51,9 +51,9 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     for (j, row) in model.noise_grid.chunks(GRID_WIDTH).enumerate() {
         for (i, value) in row.iter().enumerate() {
-            let cell_center = Vector2::new(left + i as f32 * cell_width, top - j as f32 * cell_height);
-            let start = -Vector2::new(cell_width * 0.4, 0.0);
-            let end = Vector2::new(cell_width * 0.4, 0.0);
+            let cell_center = Vec2::new(left + i as f32 * cell_width, top - j as f32 * cell_height);
+            let start = -Vec2::new(cell_width * 0.4, 0.0);
+            let end = Vec2::new(cell_width * 0.4, 0.0);
 
             let alpha = map_range(*value, -1.0, 1.0, 0.0, 1.0);
             let color = Rgba::new(1.0, 1.0, 1.0, alpha);

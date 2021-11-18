@@ -11,7 +11,6 @@
 use std::time::Instant;
 
 use nannou::prelude::*;
-use nannou::math::{cgmath, Basis2, Deg, MetricSpace, Rad, Rotation2};
 
 const WIDTH: f32 = 800.0;
 const HEIGHT: f32 = 600.0;
@@ -32,11 +31,11 @@ const LEADER_SPLIT_CHANCE: f32 = 0.02;
 struct Leader {
     spawn_time: Instant,
     // Where we've been. The last value is our current position.
-    path: Vec<Vector2>,
+    path: Vec<Vec2>,
     // Our movement speed.
     speed: f32,
     // Normalized vector pointing in our current direction.
-    dir: Vector2,
+    dir: Vec2,
     // The distance to go before turning.
     turn_dist: f32,
     // Our parent's index, if we have one.
@@ -44,15 +43,14 @@ struct Leader {
 }
 
 impl Leader {
-    fn new(pos: Vector2, rot: f32, parent: Option<usize>) -> Self {
-        let rotation = Basis2::from_angle(Deg(rot));
-        let dir = rotation.rotate_vector(cgmath::Vector2::unit_x());
+    fn new(pos: Vec2, rot_degrees: f32, parent: Option<usize>) -> Self {
+        let dir = Vec2::X.rotate(rot_degrees.to_radians());
 
         Self {
             spawn_time: Instant::now(),
             path: vec![pos, pos],
             speed: random_range(MIN_LIGHTNING_SPEED, MAX_LIGHTNING_SPEED),
-            dir: dir.into(),
+            dir,
             turn_dist: random_range(MIN_TURN_DIST, MAX_TURN_DIST),
             parent,
         }
@@ -88,13 +86,11 @@ impl Leader {
                 let bias = angle_diff_to_down.signum() * (angle_diff_to_down / 180.0).powi(2) * GROUND_BIAS_ANGLE;
                 current_angle + bias + random_range(MIN_TURN_DEGREES, MAX_TURN_DEGREES)
             };
-            let rotation = Basis2::from_angle(Deg(new_angle));
-            let dir = rotation.rotate_vector(cgmath::Vector2::unit_x());
-            self.dir = dir.into();
+            self.dir = Vec2::X.rotate(new_angle.to_radians());
         }
     }
 
-    fn pos(&self) -> Vector2 {
+    fn pos(&self) -> Vec2 {
         *self.path.last().unwrap()
     }
 }

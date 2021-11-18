@@ -15,8 +15,8 @@ const MAX_FORCE: f32 = 0.03;
 const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
 
 struct Boid {
-    pos: Vector2,
-    vel: Vector2,
+    pos: Vec2,
+    vel: Vec2,
 }
 
 impl Boid {
@@ -30,7 +30,7 @@ impl Boid {
 }
 
 struct Repel {
-    pos: Vector2,
+    pos: Vec2,
 }
 
 impl Repel {
@@ -110,7 +110,7 @@ fn event(app: &App, model: &mut Model, event: WindowEvent) {
 
 fn update(_app: &App, model: &mut Model, _update: Update) {
     // Collect forces and apply them after computing them.
-    let mut accels = vec![Vector2::zero(); model.boids.len()];
+    let mut accels = vec![Vec2::ZERO; model.boids.len()];
 
     if model.enable_separation && model.separation_factor > 0.0 {
         for (boid, accel) in model.boids.iter().zip(accels.iter_mut()) {
@@ -118,7 +118,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
                 // Try to steer away from nearby boids.
                 let desired_separation = 25.0;
 
-                let mut steer = Vector2::zero();
+                let mut steer = Vec2::ZERO;
                 let mut count = 0;
 
                 // Check if we're too close to all other boids.
@@ -138,10 +138,10 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
                     steer /= count as f32;
                 }
 
-                if !steer.is_zero() {
-                    steer = steer.with_magnitude(MAX_SPEED);
+                if steer != Vec2::ZERO {
+                    steer = steer.clamp_length(MAX_SPEED, MAX_SPEED);
                     steer -= boid.vel;
-                    steer = steer.limit_magnitude(MAX_FORCE);
+                    steer = steer.clamp_length_max(MAX_FORCE);
                 }
 
                 steer
@@ -156,7 +156,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
                 // Try to align with nearby boids.
                 let neighbor_dist = 50.0;
 
-                let mut sum = Vector2::zero();
+                let mut sum = Vec2::ZERO;
                 let mut count = 0;
 
                 for other in &model.boids {
@@ -169,8 +169,8 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
 
                 if count > 0 {
                     let avg_vel = sum / count as f32;
-                    let desired_vel = avg_vel.with_magnitude(MAX_SPEED);
-                    (desired_vel - boid.vel).limit_magnitude(MAX_FORCE)
+                    let desired_vel = avg_vel.clamp_length(MAX_SPEED, MAX_SPEED);
+                    (desired_vel - boid.vel).clamp_length_max(MAX_FORCE)
                 } else {
                     vec2(0.0, 0.0)
                 }
@@ -185,7 +185,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
                 // Try to move to the center of nearby boids.
                 let neighbor_dist = 50.0;
 
-                let mut sum = Vector2::zero();
+                let mut sum = Vec2::ZERO;
                 let mut count = 0;
 
                 for other in &model.boids {
@@ -198,8 +198,8 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
 
                 if count > 0 {
                     let avg_pos = sum / count as f32;
-                    let desired = (avg_pos - boid.pos).with_magnitude(MAX_SPEED);
-                    (desired - boid.vel).limit_magnitude(MAX_FORCE)
+                    let desired = (avg_pos - boid.pos).clamp_length(MAX_SPEED, MAX_SPEED);
+                    (desired - boid.vel).clamp_length_max(MAX_FORCE)
                 } else {
                     vec2(0.0, 0.0)
                 }
@@ -214,7 +214,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
                 // Try to move away from repel nodes.
                 let repel_dist = 50.0;
 
-                let mut sum = Vector2::zero();
+                let mut sum = Vec2::ZERO;
                 let mut count = 0;
 
                 for repel in &model.repels {
@@ -228,8 +228,8 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
                 if count > 0 {
                     let avg_pos = sum / count as f32;
                     // Move away from the average position.
-                    let desired = -(avg_pos - boid.pos).with_magnitude(MAX_SPEED);
-                    (desired - boid.vel).limit_magnitude(MAX_FORCE)
+                    let desired = -(avg_pos - boid.pos).clamp_length(MAX_SPEED, MAX_SPEED);
+                    (desired - boid.vel).clamp_length_max(MAX_FORCE)
                 } else {
                     vec2(0.0, 0.0)
                 }
@@ -241,7 +241,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
     for (boid, accel) in model.boids.iter_mut().zip(accels.iter()) {
         // Update our physics.
         boid.vel += *accel;
-        boid.vel = boid.vel.limit_magnitude(MAX_SPEED);
+        boid.vel = boid.vel.clamp_length_max(MAX_SPEED);
         boid.pos += boid.vel;
 
         // Wrap around if we left the window border.

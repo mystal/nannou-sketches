@@ -12,8 +12,8 @@ const THRESHOLD: f32 = 100.0;
 const THRESHOLD_SQUARE: f32 = THRESHOLD * THRESHOLD;
 
 struct Particle {
-    pos: Vector2,
-    vel: Vector2,
+    pos: Vec2,
+    vel: Vec2,
 }
 
 impl Particle {
@@ -67,7 +67,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
     // Draw lines between particles that are close to each other.
     for (i, particle) in model.particles.iter().enumerate() {
         for other in &model.particles[i + 1..] {
-            let dist = particle.pos.distance2(other.pos);
+            let dist = particle.pos.distance_squared(other.pos);
             if dist < THRESHOLD_SQUARE {
                 let width = map_range(dist, 0.0, THRESHOLD_SQUARE, 0.0, 3.0);
                 let color: u8 = map_range(dist, 50.0, THRESHOLD_SQUARE, 200, 30);
